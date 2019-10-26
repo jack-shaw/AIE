@@ -1,11 +1,29 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 let Admin = require('../models/admin');
 let Member = require('../models/member');
 let Artwork = require('../models/artwork');
 let express = require('express');
 let router = express.Router();
+let bcrypt = require('bcrypt-nodejs');
+router.login = (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
 
-
+    Admin.findOne({email: req.body.email}, function (err, admin) {
+        if (!admin) {
+            res.json({message: 'Please sign up first!', data: null});
+        } else {
+            // if (bcrypt.compareSync(req.body.password, admin.password)) {
+            if (req.body.password === admin.password) {
+                let token = admin.generateAuthToken();
+                res.header('token', token);
+                res.json({message: 'Welcome to our website! ', data: admin});
+                console.log(token)
+            }
+            else
+                res.json({message: 'Wrong password!', data: null});
+        }
+    });
+}
 
 router.findAll = (req, res) => {
     res.setHeader('Content-Type', 'application/json');
@@ -13,28 +31,29 @@ router.findAll = (req, res) => {
         console.log(admin);
         if (err)
             res.send(err);
-
-        res.send(JSON.stringify(admin,null,5));
-    });
-}
-router.findOne = (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    Admin.find({ "_id" : req.params.id },function(err, admin) {
-        if (err)
-            res.json({ message: 'Administrator NOT Found!', errmsg : err } );
         else
             res.send(JSON.stringify(admin,null,5));
     });
 }
-router.deleteMember = (req, res) => {
-    //delete by name, id, email, phone
-    Member.findByIdAndRemove(req.params.id, function(err){
-        if(err)
-            res.json({message: 'Member Not Deleted!', errmsg: err});
+router.findOne = (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    Admin.find({ "email" : req.params.email },function(err, admin) {
+        if (err)
+            res.json({ message: 'Administrator NOT Found!', errmsg : err } );
         else
-            res.json({message:'Member Deleted Successfully!'});
+            console.log(admin);
+        res.send(JSON.stringify(admin,null,5));
     });
 }
+// router.deleteMember = (req, res) => {
+//     //delete by name, id, email, phone
+//     Member.findByIdAndRemove(req.params.id, function(err){
+//         if(err)
+//             res.json({message: 'Member Not Deleted!', errmsg: err});
+//         else
+//             res.json({message:'Member Deleted Successfully!'});
+//     });
+// }
 router.addMember = (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     var member = new Member();

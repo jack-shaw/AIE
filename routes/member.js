@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 let Member = require('../models/member');
 let express = require('express');
 let router = express.Router();
@@ -39,11 +39,10 @@ router.signUp = (req, res) =>{
         res.json({message: 'Please input the same password!',data:null})
     }
     else {
-        Member.findOne({email: req.body.email}, function (err, member) {
-            if (member) {
+        Member.findOne({email: req.body.email}, function (err, user) {
+            if (user) {
                 res.json({message: 'Account already exists! Please change another email.', data: null});
             } else {
-                // console.log(member)
                 member.save(function (err) {
                     if (err) {
                         res.json({message: 'Fail to register!', err: err, data: null});
@@ -70,7 +69,7 @@ router.login = (req, res) => {
                 // });
                 let token = member.generateAuthToken();
                 res.header('token', token);
-                res.json({message: 'Welcome to our website! ' + member.username, data: member});
+                res.json({message: 'Welcome to our website! ' + member.member_name, data: member});
                 console.log(token)
             }
             else
@@ -82,7 +81,7 @@ router.login = (req, res) => {
 router.findOne = (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     //find by id, name, email, phone
-    Member.find({"_id": req.params.id}, function(err, member) {
+    Member.find({"email": req.params.email}, function(err, member) {
         if (err)
             res.json({message:'Member Not Found!', errmsg: err});
         else
@@ -109,18 +108,42 @@ router.deleteMember = (req, res) => {
     });
 }
 
-// function getByValue(array, member_id){
-//     var result = array.filter(function(obj){return obj.member_id == member_id;});
-//     return result ? result[0] : null;
-// }
-// function getByValue(array, email){}
-// function getByValue(array, name){}
-// function getByValue(array, phone){}
+router.changePassword = (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    if (req.params.member == null) {
+        res.json({ message: 'You can not change password!'});
+    } else {
+        let member = new Member();
+        member.password = bcrypt.hashSync(req.body.password);
+        member.confirmpwd = bcrypt.hashSync(req.body.confirmpwd)
+        if (member.password == null || member.confirmpwd == null) {
+            res.json({message: 'Password and confirm password are all required!', data: null})
+        } else if ((8 > req.body.password.length) || (8 > req.body.confirmpwd)) {
+            res.json({message: 'Password should be more than 8 characters!', data: null})
+        } else if (!(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W])[a-zA-Z\d\W?$]{8,16}/.test(req.body.password))) {
+            res.json({
+                message: 'Password must has number,special character, lowercase and capital Letters!',
+                data: null
+            });
+        } else if (req.body.password !== req.body.confirmpwd) {
+            res.json({message: 'Please input the same password!', data: null})
+        }
+        else {
+            Member.findOneAndUpdate({"email": req.params.member},
+                {
+                    password: bcrypt.hashSync(req.body.password),
+                    confirmpwd: bcrypt.hashSync(req.body.confirmpwd)
+                },
+                {new: true},
+                function (err, member) {
+                    if (err)
+                        res.json({message: 'Unable to change', errmsg: err});
+                    else
+                        res.json({message: 'Password changed successfully!', data: member});
+                });
+        }
+    }
+};
 
-//
-//
-// router.editAddress = (req, res) => {
-//     //post
-// }
 
 module.exports = router;

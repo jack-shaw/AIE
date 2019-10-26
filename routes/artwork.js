@@ -17,10 +17,6 @@ router.findAll = (req, res) => {
 }
 //function自动生成规定格式的art_id
 
-function getByValue(array, id) {
-    var result  = array.filter(function(obj){return obj.id == id;} );
-    return result ? result[0] : null; // or undefined
-}
 router.findOne = (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     Artwork.find({ "_id" : req.params.id },function(err, artwork) {
@@ -76,22 +72,27 @@ router.removeArtwork = (req, res) => {
             res.json({message:'Artwork Successfully Deleted!'});
     });
 }
+
 router.updateViewTimes = (req, res) => {
 
-    Artwork.findById(req.params.id, function(err,artwork) {
+    Artwork.findById(req.params.id,function(err, artwork) {
         if (err)
-            res.json({ message: 'Artwork NOT Found!', errmsg : err } );
-        else {
+            res.json({message: 'Artwork NOT Found!', errmsg: err});
+        else
             artwork.view_times += 1;
             artwork.save(function (err) {
-                if (err)
-                    res.json({ message: 'View Times NOT Updated!', errmsg : err } );
-                else
-                    res.json({ message: 'Artwork Successfully Updated!', data: artwork });
-            });
-        }
+            if (err)
+                res.send(err);
+            else
+                res.json({message: "Updated Successfully!", data: artwork});
+        });
+
     });
-}
+
+
+
+};
+
 
 function getViewTimes(array) {
     let sumOfViewTimes = 0;
@@ -100,12 +101,25 @@ function getViewTimes(array) {
 }
 router.findSumOfViewTimes = (req, res) => {
 
-    Artwork.find(function(err, artwork) {
-        if (err)
+    let viewtimes = getViewTimes(artwork);
+    res.json({totalviewtimes : viewtimes});
+}
+function fuzzyQuery(list, keyWord) {
+    var arr = [];
+    for (var i = 0; i < list.length; i++) {
+        if (list[i].split(keyWord).length > 1) {
+            arr.push(list[i]);
+        }
+    }
+    return arr;
+}
+router.fuzzySearch = (req, res) => {
+    Artwork.find(function(err, artwork){
+        if(err)
             res.send(err);
         else
-            res.json({ sumOfViewTimes : getViewTimes(artwork) });
-    });
+            res.json({fuzzysearch : fuzzyQuery(keyWord)})
+    })
 }
 
 

@@ -2,6 +2,7 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+// var bodyParser = require('body-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
@@ -26,6 +27,7 @@ db.once('open', function () {
 const artwork = require('./routes/artwork');
 const admin = require('./routes/admin');
 const member = require('./routes/member');
+const auth = require('./middleware/check-auth');
 
 var app = express();
 var port = process.env.PORT || 3001;
@@ -61,29 +63,48 @@ app.use("*", function (req, res, next) {
 
 //member operations
 
-app.post('/member', member.signUp);
-app.post('/member/:id', member.login);
+app.post('/member/signup', member.signUp);// ok
+app.post('/member/login', member.login);// ok
 // app.post('/member/:email', member.login);//for next phase
 // app.post('/member/:phone', member.login);//for next phase
-app.get('/member', member.findAll);
-app.get('/member/:id', member.findOne);
+app.get('/member', member.findAll);// ok
+app.get('/member/:email', member.findOne);// ok
+app.put('/member/changePassword/:member', auth.authMember,member.changePassword);// ok
+//app.post('/artwork', member.comment);for next phase
+//app.delete('/artwork', member.recallComment);for next phase
+//app.get('/member/:id', member.subscriberList);for next phase
+//app.put('/member/:id/subscriber_list', member.follow);for next phase
+//app.get('/member/:id', member.getFollowerList);for next phase
+//app.delete('/member/:id/subscribers', member.removeSubscriber);for next phase
+//app.delete(''/member/:id/subscribers', member.unfollow);for next phase
 
 //artwork operations
 
-app.get('/artwork', artwork.findAll);
-app.get('/artwork/:id', artwork.findOne);
-app.get('/artwork/view_times', artwork.findSumOfViewTimes);
-app.post('/artwork', artwork.addArtwork);
-app.delete('/artwork/:id', artwork.removeArtwork);//user和admin都可以操作
-app.put('/artwork/:id/visit_times', artwork.updateViewTimes);
+app.get('/artwork', artwork.findAll);// ok
+app.get('/artwork/:id', artwork.findOne);// ok
+app.get('/artwork/viewtimes', artwork.findSumOfViewTimes);
+app.put('/artwork/:id/view_times', artwork.updateViewTimes);
+app.post('/artwork', artwork.addArtwork);// ok
+app.delete('/artwork/:id', artwork.removeArtwork);//user和admin都可以操作 //ok
+
+//app.post('/artwork', artwork.addPicture);for next phase
+// app.post('/artwork', artwork.addVideo);for next phase
+//app.post('/artwork', artwork.addComment);for next phase
+//app.get('/artwork/datasize', artwork.retrieveSize;for next phase
+
 
 
 //administrator operations
-app.put('/member', admin.addMember);
-app.delete('/artwork/:id', artwork.removeArtwork);
-app.delete('/member/:id', member.deleteMember);
-app.get('/admin/:id', admin.findOne);
-app.get('/admin', admin.findAll);
+
+app.post('/admin/login', admin.login);//ok
+app.post('/member', admin.addMember);
+app.get('/artwork/:id', artwork.findOne);//ok
+// app.delete('/artwork/:id', artwork.removeArtwork);//ok
+app.delete('/:admin/member/:email', auth.authAdmin,member.deleteMember);//ok
+app.get('/admin/:email', admin.findOne);//ok
+app.get('/admin', admin.findAll);//ok
+//app.delete('/artwork', admin.recallComment);for next phase
+// app.delete('/artwork', admin.removeComment);for next phase
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

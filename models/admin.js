@@ -1,5 +1,5 @@
 let mongoose = require('mongoose');
-
+let jwt = require('jsonwebtoken');
 let AdminSchema = new mongoose.Schema({
         admin_name: String,
         admin_id: String,
@@ -15,4 +15,8 @@ let AdminSchema = new mongoose.Schema({
 
     },
     {collection: 'admindb'});
+AdminSchema.methods.generateAuthToken = function(){
+    let token = jwt.sign({email: this.email}, 'AdminJwtKey');
+    return token;
+}
 module.exports = mongoose.model('Admin', AdminSchema);

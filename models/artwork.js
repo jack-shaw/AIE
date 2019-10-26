@@ -8,7 +8,7 @@ let ArtworkSchema = new mongoose.Schema({
     // art_type: options(),//gif(heic),static photo(分类jpeg,png...),video,audio
     // format: options(),
     // uploadDate: ontimeupdate,//上传时间 不知道这个ontimeupdate是什么
-    visit_times: {
+    view_times: {
         type: Number,
         default : 0
     }
