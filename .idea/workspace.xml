@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f273a8e3-1140-4c1d-9750-726e5444e288" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/bin_www.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/bin_www.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/functional/api/artworkTest.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/functional/api/artworkTest.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -29,7 +29,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="10.14.1" />
-    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/donationsAPIWithTests" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../myapp/donationsAPIWithTests" />
     <property name="nodejs_interpreter_path" value="node" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="restartRequiresConfirmation" value="false" />
@@ -1353,6 +1353,7 @@
       <workItem from="1571959156076" duration="54202000" />
       <workItem from="1572179709572" duration="5441000" />
       <workItem from="1572211170215" duration="9000" />
+      <workItem from="1572483540484" duration="1222000" />
     </task>
     <servers />
   </component>
