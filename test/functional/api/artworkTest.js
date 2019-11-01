@@ -148,37 +148,8 @@ describe("ArtworkSchema", () => {
                     expect(res.body[0]).to.have.property("paymenttype", "Visa");
                 });
         });
-    });
-    describe("PUT /donations/:id/vote", () => {
-        describe("when the id is valid", () => {
-            it("should return a message and the donation upvoted by 1", () => {
-                return request(server)
-                    .put(`/donations/${validID}/votes`)
-                    .expect(200)
-                    .then(resp => {
-                        expect(resp.body).to.include({
-                            message: "Donation Upvoted!"
-                        });
-                        expect(resp.body.data).to.have.property("upvotes", 3);
-                    });
-            });
-            after(() => {
-                return request(server)
-                    .get(`/donations/${validID}`)
-                    .set("Accept", "application/json")
-                    .expect("Content-Type", /json/)
-                    .expect(200)
-                    .then(resp => {
-                        expect(resp.body[0]).to.have.property("upvotes", 3);
-                    });
-            });
-        });
-        describe("when the id is invalid", () => {
-            it("should return a 404 and a message for invalid donation id", () => {
-                return request(server)
-                    .put("/donations/1100001/vote")
-                    .expect(404);
-            });
-        });
+
+
+
     });
 });

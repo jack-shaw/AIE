@@ -103,31 +103,8 @@ describe('Donationss', function (){
                         done();
                     });
             });
-            after(function  (done) {
-                chai.request(server)
-                    .get('/donations')
-                    .end(function(err, res) {
-                        expect(res).to.have.status(200);
-                        expect(res.body).be.be.a('array');
-                        let result = _.map(res.body, function (donation) {
-                            return { paymenttype: donation.paymenttype,
-                                amount: donation.amount };
-                        }  );
-                        expect(result).to.not.include( { paymenttype: 'Visa', amount: 1200  } );
-                        done();
-                    });
-            });
+
         });
-        describe('when id is invalid', function () {
-            it('should return an error message', function(done) {
-                chai.request(server)
-                    .delete('/donations/1000002')
-                    .end( (err, res) => {
-                        expect(res).to.have.status(200);
-                        expect(res.body).to.have.property('message','Donation NOT DELETED!' ) ;
-                        done();
-                    });
-            });
-        });
+
     });
 });
