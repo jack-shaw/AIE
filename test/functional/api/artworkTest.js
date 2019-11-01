@@ -10,14 +10,14 @@ let server;
 let mongod;
 let db, validID;
 
-describe("Donationss", () => {
+describe("ArtworkSchema", () => {
     before(async () => {
         try {
             mongod = new MongoMemoryServer({
                 instance: {
                     port: 27017,
                     dbPath: "./test/database",
-                    dbName: "aie" // by default generate random dbName
+                    dbName: "artworkdb" // by default generate random dbName
                 }
             });
             // Async Trick - this ensures the database is created before
@@ -45,18 +45,18 @@ describe("Donationss", () => {
 
     beforeEach(async () => {
         try {
-            await Donation.deleteMany({});
-            let donation = new Donation();
-            donation.paymenttype = "visa";
-            donation.amount = 1200;
-            donation.upvotes = 2;
-            await donation.save();
-            donation = new Donation();
-            donation.paymenttype = "paypal";
-            donation.amount = 1000;
-            await donation.save();
-            donation = await Donation.findOne({ amount: 1200 });
-            validID = donation._id;
+            await Artwork.deleteMany({});
+            let artwork = new Artwork();
+            artwork.paymenttype = "visa";
+            artwork.amount = 1200;
+            artwork.upvotes = 2;
+            await artwork.save();
+            artwork = new Artwork();
+            artwork.paymenttype = "paypal";
+            artwork.amount = 1000;
+            await artwork.save();
+            artwork = await Artwork.findOne({ amount: 1200 });
+            validID = artwork._id;
         } catch (error) {
             console.log(error);
         }
