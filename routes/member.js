@@ -98,16 +98,29 @@ router.findAll = (req, res) => {
         res.send(JSON.stringify(member,null,5));
     });
 }
+// router.deleteMember = (req, res) => {
+//     //delete by name, id, email, phone
+//     Member.findByIdAndRemove(req.params.id, function(err){
+//         if(err)
+//             res.json({message: 'Member Not Deleted!', errmsg: err});
+//         else
+//             res.json({message:'Member Deleted Successfully!'});
+//     });
+// }
 router.deleteMember = (req, res) => {
-    //delete by name, id, email, phone
-    Member.findByIdAndRemove(req.params.id, function(err){
-        if(err)
-            res.json({message: 'Member Not Deleted!', errmsg: err});
-        else
-            res.json({message:'Member Deleted Successfully!'});
-    });
-}
-
+    res.setHeader('Content-Type','application/json');
+    if (req.params.admin == null) {
+        res.json({ message: 'You can not delete the member!'});
+    } else{
+        Member.findOneAndRemove({"email" : req.params.email},function (err, member) {
+            if (err) {
+                res.json({ message: 'Failed to delete!', data: null});
+            } else {
+                res.json({ message: 'Member deleted successfully', data: member});
+            }
+        });
+    }
+};
 router.changePassword = (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     if (req.params.member == null) {

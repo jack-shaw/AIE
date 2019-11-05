@@ -1,133 +1,93 @@
-let chai = require('chai');
+let chai= require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../../bin/www');
 let expect = chai.expect;
-chai.use(require('chai-things'));
-let datastore = require('../../models/artwork');
+let mongoose = require('mongoose');
+
+let db = mongoose.connection;
+let server = null;
+let datastore = null;
 
 chai.use(chaiHttp);
-let _ = require('lodash' );
+chai.use(require('chai-things'));
+let _ = require('lodash');
+let jwt = require('jsonwebtoken');
 
-describe('aie', function (){
-    beforeEach(() => {
-        while(datastore.length > 0) {
-            datastore.pop();
+let artwork = [
+    {
+        "art_name": "Sunshine",
+        "author":"Cathy",
+        "description":"nothing",
+        "view_times":"1"
+    }
+
+]
+describe('artwork', () => {
+    before(function (done) {
+        delete require.cache[require.resolve('../../bin/www')];
+        datastore = require('../../models/artwork');
+        server = require('../../bin/www');
+        try {
+            db.collection('artworkdb').insertMany(artwork);
+            console.log(' Artworks inserted successfully.');
+
+        } catch (e) {
+            console.log(e);
         }
-        datastore.push(
-            {id: 1000000, paymenttype: 'PayPal', amount: 1600, upvotes: 1}
-        );
-        datastore.push(
-            {id: 1000001, paymenttype: 'Direct', amount: 1100, upvotes: 2}
-        );
+        done();
     });
-    describe('GET /donations', () => {
-        it('should GET all the donations', function(done) {
+    after(function (done) {
+        try {
+            db.collection('artworkdb').remove({'art_name': {$in: ['Sunshine']}});
+            console.log('Artworks deleted successfully.');
+            done();
+        } catch (e) {
+            console.log(e);
+        }
+    });
+
+describe('GET /artwork', () => {
+
+    it('should return all artworks in an array', function (done) {
+        chai.request(server)
+            .get('/artwork')
+            .end(function (err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.a('array');
+                done();
+            });
+    })
+})
+    describe('GET /artwork/5db304557c213e556143e1f4', () => {
+        it('should return an artwork ', function (done) {
             chai.request(server)
-                .get('/donations')
-                .end(function(err, res) {
+                .get('/artwork/5db304557c213e556143e1f4')
+                // .set('token', token)
+                .end(function (err, res) {
                     expect(res).to.have.status(200);
                     expect(res.body).to.be.a('array');
-                    expect(res.body.length).to.equal(2);
-                    let result = _.map(res.body, (donation) => {
-                        return { id: donation.id,
-                            amount: donation.amount };
-                    });
-                    expect(result).to.include( { id: 1000000, amount: 1600  } );
-                    expect(result).to.include( { id: 1000001, amount: 1100  } );
                     done();
                 });
-        });
-    });
-    describe('POST /donations', function () {
-        it('should return confirmation message and update datastore', function(done) {
-            let donation = {
-                paymenttype: 'Visa' ,
-                amount: 1200,
-                upvotes: 0
-            };
-            chai.request(server)
-                .post('/donations')
-                .send(donation)
-                .end( (err, res) => {
-                    expect(res).to.have.status(200);
-                    expect(res.body).to.have.property('message').equal('Donation Added!' ) ;
-                    done();
-                });
-        });
-        after(function  (done) {
-            chai.request(server)
-                .get('/donations')
-                .end(function(err, res) {
-                    expect(res).to.have.status(200);
-                    expect(res.body).be.be.a('array');
-                    let result = _.map(res.body, function (donation) {
-                        return { paymenttype: donation.paymenttype,
-                            amount: donation.amount };
-                    }  );
-                    expect(result).to.include( { paymenttype: 'Visa', amount: 1200  } );
-                    done();
-                });
-        });
+        })
     });
 
-    describe('PUT /donations/:id/vote', function () {
-        it('should return a message and the donation upvoted by 1', function(done) {
+    describe('DELETE /artwork/:art_name', () => {
+        it('should return artwork deleted successfully message', function (done) {
             chai.request(server)
-                .put('/donations/1000001/vote')
-                .end(function(err, res) {
-                    expect(res).to.have.status(200);
-                    let donation = res.body.data ;
-                    expect(donation).to.include( { id: 1000001, upvotes: 3  } );
+                .delete('/artwork/Sunshine')
+                .end((err, res) => {
+                    expect(res.body).to.have.property('message').equal('Artwork deleted successfully');
                     done();
                 });
-        });
-        it('should return a 404 and a message for invalid donation id', function(done) {
-            chai.request(server)
-                .put('/donations/1100001/vote')
-                .end(function(err, res) {
-                    expect(res).to.have.status(404);
-                    expect(res.body).to.have.property('message','Invalid Donation Id!' ) ;
-                    done();
-                });
-        });
-
-    });
-    describe('DELETE /donations/:id', function () {
-        describe('when id is valid', function () {
-            it('should return a confirmation message and the deleted donation', function(done) {
+            after(function (done) {
                 chai.request(server)
-                    .delete('/donations/1000001')
-                    .end( (err, res) => {
+                    .get('/artwork')
+                    .end(function (err, res) {
                         expect(res).to.have.status(200);
-                        expect(res.body).to.have.property('message','Donation Successfully Deleted!' ) ;
+                        expect(res.body).to.be.a('array');
+                        expect(res.body.length).to.equal(1);
                         done();
                     });
             });
-            after(function  (done) {
-                chai.request(server)
-                    .get('/donations')
-                    .end(function(err, res) {
-                        expect(res).to.have.status(200);
-                        expect(res.body).be.be.a('array');
-                        let result = _.map(res.body, function (donation) {
-                            return { paymenttype: donation.paymenttype,
-                                amount: donation.amount };
-                        }  );
-                        expect(result).to.not.include( { paymenttype: 'Visa', amount: 1200  } );
-                        done();
-                    });
-            });
-        });
-        describe('when id is invalid', function () {
-            it('should return an error message', function(done) {
-                chai.request(server)
-                    .delete('/donations/1000002')
-                    .end( (err, res) => {
-                        expect(res).to.have.status(200);
-                        expect(res.body).to.have.property('message','Donation NOT DELETED!' ) ;
-                        done();
-                    });
-            });
-        });
-    });
-});
+        })
+    })
+})

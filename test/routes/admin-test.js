@@ -1,110 +1,134 @@
-let chai = require('chai');
+let chai= require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../../bin/www');
 let expect = chai.expect;
-chai.use(require('chai-things'));
-let datastore = require('../../models/donations');
+let mongoose = require('mongoose');
+
+let db = mongoose.connection;
+let server = null;
+let datastore = null;
 
 chai.use(chaiHttp);
-let _ = require('lodash' );
+chai.use(require('chai-things'));
+let bcrypt = require('bcrypt-nodejs');
+let password = bcrypt.hashSync("Admin1..");
+let _ = require('lodash');
+let jwt = require('jsonwebtoken');
+let token = null;
+let admin = [
+    {
+        "admin_name": "Jane",
+        "admin_id":"001",
+        "email":"admin1@qq.com",
+        "password":password
+    }
+]
+describe('Admin', () => {
+    before(function (done) {
+        delete require.cache[require.resolve('../../bin/www')];
+        datastore = require('../../models/admin');
+        server = require('../../bin/www');
+        token = jwt.sign({email: datastore.email}, 'AdminJwtKey');
+        try {
+            db.collection('admindb').insertMany(admin);
+            console.log('Admins inserted successfully.');
 
-describe('Donationss', function (){
-    beforeEach(() => {
-        while(datastore.length > 0) {
-            datastore.pop();
+        } catch (e) {
+            console.log(e);
         }
-        datastore.push(
-            {id: 1000000, paymenttype: 'PayPal', amount: 1600, upvotes: 1}
-        );
-        datastore.push(
-            {id: 1000001, paymenttype: 'Direct', amount: 1100, upvotes: 2}
-        );
+        done();
     });
-    describe('GET /donations', () => {
-        it('should GET all the donations', function(done) {
-            chai.request(server)
-                .get('/donations')
-                .end(function(err, res) {
-                    expect(res).to.have.status(200);
-                    expect(res.body).to.be.a('array');
-                    expect(res.body.length).to.equal(2);
-                    let result = _.map(res.body, (donation) => {
-                        return { id: donation.id,
-                            amount: donation.amount };
-                    });
-                    expect(result).to.include( { id: 1000000, amount: 1600  } );
-                    expect(result).to.include( { id: 1000001, amount: 1100  } );
-                    done();
-                });
-        });
-    });
-    describe('POST /donations', function () {
-        it('should return confirmation message and update datastore', function(done) {
-            let donation = {
-                paymenttype: 'Visa' ,
-                amount: 1200,
-                upvotes: 0
-            };
-            chai.request(server)
-                .post('/donations')
-                .send(donation)
-                .end( (err, res) => {
-                    expect(res).to.have.status(200);
-                    expect(res.body).to.have.property('message').equal('Donation Added!' ) ;
-                    done();
-                });
-        });
-        after(function  (done) {
-            chai.request(server)
-                .get('/donations')
-                .end(function(err, res) {
-                    expect(res).to.have.status(200);
-                    expect(res.body).be.be.a('array');
-                    let result = _.map(res.body, function (donation) {
-                        return { paymenttype: donation.paymenttype,
-                            amount: donation.amount };
-                    }  );
-                    expect(result).to.include( { paymenttype: 'Visa', amount: 1200  } );
-                    done();
-                });
-        });
+    after(function (done) {
+        try {
+            db.collection('admindb').remove({'email': {$in: ['admin1@qq.com']}});
+            console.log('Admins deleted successfully.');
+            done();
+        } catch (e) {
+            console.log(e);
+        }
     });
 
-    describe('PUT /donations/:id/vote', function () {
-        it('should return a message and the donation upvoted by 1', function(done) {
-            chai.request(server)
-                .put('/donations/1000001/vote')
-                .end(function(err, res) {
-                    expect(res).to.have.status(200);
-                    let donation = res.body.data ;
-                    expect(donation).to.include( { id: 1000001, upvotes: 3  } );
-                    done();
-                });
-        });
-        it('should return a 404 and a message for invalid donation id', function(done) {
-            chai.request(server)
-                .put('/donations/1100001/vote')
-                .end(function(err, res) {
-                    expect(res).to.have.status(404);
-                    expect(res.body).to.have.property('message','Invalid Donation Id!' ) ;
-                    done();
-                });
-        });
-
-    });
-    describe('DELETE /donations/:id', function () {
-        describe('when id is valid', function () {
-            it('should return a confirmation message and the deleted donation', function(done) {
+    describe('POST /admin/login', () => {
+        describe('Login function', function () {
+            it('should return message about login successfully', function (done) {
+                let admin = {
+                    'email': 'jackshawhia@gmail.com',
+                    'password': '123456789o'
+                };
                 chai.request(server)
-                    .delete('/donations/1000001')
-                    .end( (err, res) => {
-                        expect(res).to.have.status(200);
-                        expect(res.body).to.have.property('message','Donation Successfully Deleted!' ) ;
+                    .post('/admin/login')
+                    .send(admin)
+                    .end(function (err, res) {
+                        expect(res.body).to.be.a('object');
+                        expect(res.body).to.have.property('message').equal('Welcome to our website! ');
                         done();
                     });
             });
 
         });
 
+        it('should return admin does\'t exist message', function (done) {
+            let admin = {'email': '12@qq.com', 'password': 'Hia123...'};
+            chai.request(server).post('/admin/login').send(admin).end(function (err, res) {
+                expect(res.body).to.be.a('object');
+                expect(res.body).to.have.property('message').equal('Please sign up first!');
+                expect(res.body.data).to.equal(null);
+                done();
+            });
+        });
+
+        it('should return wrong password message', function (done) {
+            let member = {'email': 'admin1@qq.com', 'password': '5111'};
+            chai.request(server).post('/admin/login').send(member).end(function (err, res) {
+                expect(res.body).to.be.a('object');
+                expect(res.body).to.have.property('message').equal('Wrong password!');
+                expect(res.body.data).to.equal(null);
+                done();
+            });
+        });
+    })
+
+    describe('GET /admin', () => {
+        it('should return all admins in an array', function (done) {
+            chai.request(server)
+                .get('/admin')
+                // .set('token', token)
+                .end(function (err, res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('array');
+                    done();
+                });
+        })
+    })
+    describe('GET /admin/admin1@qq.com', () => {
+        it('should return a admin ', function (done) {
+            chai.request(server)
+                .get('/admin/admin1@qq.com')
+                // .set('token', token)
+                .end(function (err, res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('array');
+                    done();
+                });
+        })
+    })
+    describe('DELETE /:admin/member/:email', () => {
+        it('should return unauthorized error', function (done) {
+            chai.request(server)
+                .delete('/member/10949@qq.com')
+                .end((err, res) => {
+                    expect(res).to.have.status(404);
+                    done();
+                });
+        });
+        it('should return member deleted successfully message', function (done) {
+            chai.request(server)
+                .delete('/jackshawhia@gmail.com/member/666@qq.com')
+                .set('token', token)
+                .end((err, res) => {
+                    expect(res.body).to.have.property('message').equal('Member deleted successfully');
+                    done();
+                });
+        });
     });
-});
+})
+

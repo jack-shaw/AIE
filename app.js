@@ -2,7 +2,7 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-// var bodyParser = require('body-parser');
+var bodyParser = require('body-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
@@ -42,6 +42,8 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -65,52 +67,37 @@ app.use("*", function (req, res, next) {
 
 app.post('/member/signup', member.signUp);// ok
 app.post('/member/login', member.login);// ok
-// app.post('/member/:email', member.login);//for next phase
-// app.post('/member/:phone', member.login);//for next phase
 app.get('/member', member.findAll);// ok
 app.get('/member/:email', member.findOne);// ok
 app.put('/member/changePassword/:member', auth.authMember,member.changePassword);// ok
-//app.post('/artwork', member.comment);for next phase
-//app.delete('/artwork', member.recallComment);for next phase
-//app.get('/member/:id', member.subscriberList);for next phase
-//app.put('/member/:id/subscriber_list', member.follow);for next phase
-//app.get('/member/:id', member.getFollowerList);for next phase
-//app.delete('/member/:id/subscribers', member.removeSubscriber);for next phase
-//app.delete(''/member/:id/subscribers', member.unfollow);for next phase
 
 //artwork operations
 
 app.get('/artwork', artwork.findAll);// ok
 app.get('/artwork/:id', artwork.findOne);// ok
-app.get('/artwork/viewtimes', artwork.findSumOfViewTimes);
-app.put('/artwork/:id/view_times', artwork.updateViewTimes);
+// app.get('/artwork/viewtimes', artwork.findSumOfViewTimes);
+// app.put('/artwork/:id/view_times', artwork.updateViewTimes);
 app.post('/artwork', artwork.addArtwork);// ok
-app.delete('/artwork/:id', artwork.removeArtwork);//user和admin都可以操作 //ok
-
-//app.post('/artwork', artwork.addPicture);for next phase
-// app.post('/artwork', artwork.addVideo);for next phase
-//app.post('/artwork', artwork.addComment);for next phase
-//app.get('/artwork/datasize', artwork.retrieveSize;for next phase
-
-
+app.delete('/artwork/:art_name', artwork.removeArtwork);//user和admin都可以操作 //ok
 
 //administrator operations
 
 app.post('/admin/login', admin.login);//ok
-app.post('/member', admin.addMember);
-app.get('/artwork/:id', artwork.findOne);//ok
+// app.post('/member', admin.addMember);
+// app.get('/artwork/:id', artwork.findOne);//ok
 // app.delete('/artwork/:id', artwork.removeArtwork);//ok
 app.delete('/:admin/member/:email', auth.authAdmin,member.deleteMember);//ok
 app.get('/admin/:email', admin.findOne);//ok
 app.get('/admin', admin.findAll);//ok
-//app.delete('/artwork', admin.recallComment);for next phase
-// app.delete('/artwork', admin.removeComment);for next phase
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
-
+if (process.env.NODE_ENV |= 'test') {
+    app.use(logger('dev'));
+}
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
@@ -123,3 +110,4 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+

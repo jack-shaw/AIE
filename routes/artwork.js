@@ -64,14 +64,24 @@ router.addArtwork = (req, res) => {
     });
 }
 
+// router.removeArtwork = (req, res) => {
+//     Artwork.findByIdAndRemove(req.params.id, function(err){
+//         if(err)
+//             res.json({message:'Artwork Not Deleted!', errmsg: err});
+//         else
+//             res.json({message:'Artwork Successfully Deleted!'});
+//     });
+// }
 router.removeArtwork = (req, res) => {
-    Artwork.findByIdAndRemove(req.params.id, function(err){
-        if(err)
-            res.json({message:'Artwork Not Deleted!', errmsg: err});
-        else
-            res.json({message:'Artwork Successfully Deleted!'});
-    });
-}
+    res.setHeader('Content-Type','application/json');
+        Artwork.findOneAndRemove({"art_name" : req.params.art_name},function (err, artwork) {
+            if (err) {
+                res.json({ message: 'Failed to delete!', data: null});
+            } else {
+                res.json({ message: 'Artwork deleted successfully', data: artwork});
+            }
+        });
+    }
 
 router.updateViewTimes = (req, res) => {
 
