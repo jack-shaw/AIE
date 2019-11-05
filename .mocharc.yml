@@ -1,0 +1,13 @@
+file:
+    - ./test/routes/admin-test.js
+    - ./test/routes/artwork-test.js
+    - ./test/routes/member-test.js
+require: '@babel/register'
+
+
+ui: bdd
+global:
+    - okGlobalA,okGlobalB
+    - okGlobalC
+    - callback*
+timeout: 300

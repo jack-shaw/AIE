@@ -3,10 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "test": "NODE_ENV=test mocha --timeout 20000 test/routes/member-test.js"
+    "start:watch": "cross-env NODE_ENV=dev nodemon --exec babel-node bin/www",
+    "test": "NODE_ENV=test mocha --timeout 20000 test/routes/member-test.js",
+    "compile": "babel ./ --out-dir dist/ --ignore ./node_modules,./test --copy-files",
+    "start": "cross-env NODE_ENV=dev PORT=3001 node dist/bin/www",
+    "build": "npm run compile",
+    "clean": "rimraf ./dist && mkdir dist",
+    "postbuild": "npm start",
+    "prebuild": "npm-run-all test clean",
+    "lint": "esw  ./test ./routes ./models/ app.js bin/www ",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:watch": "npm run lint -- --watch"
   },
   "dependencies": {
+    "@babel/runtime": "^7.6.3",
     "axios": "^0.19.0",
     "bcrypt-node": "^0.1.0",
     "bcrypt-nodejs": "0.0.3",
@@ -28,9 +38,20 @@
     "npm": "^6.12.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/node": "^7.6.3",
+    "@babel/plugin-transform-runtime": "^7.6.2",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/register": "^7.0.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "chai-things": "^0.2.0",
-    "mocha": "^3.4.2"
+    "cross-env": "^6.0.3",
+    "eslint": "^6.6.0",
+    "eslint-watch": "^6.0.1",
+    "mocha": "^3.4.2",
+    "nodemon": "^1.19.4",
+    "nyc": "^14.1.1"
   }
 }
