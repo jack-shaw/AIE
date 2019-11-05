@@ -3,7 +3,7 @@ web app development assignment1
 
 <br>Zhenyu Shao</br>
 <br>w20086425</br>
-
+#project description
 <p>Description: This platform aims to offer a place, where people can find useful art resourses, inspiring artworks, and intriguing topics.</p>
 <p>Member: users are acquired to sign up first in order to enter this website, and after registeration in this website, users can log in everytime they want to have a look in this platform. Users are able to find other users, subscribe to other users in order to get users' artwork and latest activities. Also, users can remove other users from subscribing list by unfollowing them. Users can publish artworks from their accounts, also users are able to purchase others' artworks. Purchase process require payment details like payment method, shipping address, etc. These things will be require as user try to register at this website.</p>
 <p>Artwork: published artworks can be shown in publishers' homepage, also may be shown on the main page of this website. Artwork can have several properties like update time, author, artwork size, format, comments, thumbups...Within these properties, comments can be added by publishers and other existed users, there will be thumbup button for users to click to show their preference to a particular artwork. Pubulishers have the right to recall published artworks for any excuses.</p>

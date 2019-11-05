@@ -1,30 +1,30 @@
-const mongoose = require('mongoose');
-let Artwork = require('../models/artwork');
-let express = require('express');
-let router = express.Router();
+const mongoose = require("mongoose")
+let Artwork = require("../models/artwork")
+let express = require("express")
+let router = express.Router()
 
 
 
 router.findAll = (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    Artwork.find(function(err, artwork) {
-        console.log(artwork);
-        if (err)
-            res.send(err);
+  res.setHeader("Content-Type", "application/json")
+  Artwork.find(function(err, artwork) {
+    console.log(artwork)
+    if (err)
+      res.send(err)
 
-        res.send(JSON.stringify(artwork,null,5));
-    });
+    res.send(JSON.stringify(artwork,null,5))
+  })
 }
 //function自动生成规定格式的art_id
 
 router.findOne = (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    Artwork.find({ "_id" : req.params.id },function(err, artwork) {
-        if (err)
-            res.json({ message: 'Artwork NOT Found!', errmsg : err } );
-        else
-            res.send(JSON.stringify(artwork,null,5));
-    });
+  res.setHeader("Content-Type", "application/json")
+  Artwork.find({ "_id" : req.params.id },function(err, artwork) {
+    if (err)
+      res.json({ message: "Artwork NOT Found!", errmsg : err } )
+    else
+      res.send(JSON.stringify(artwork,null,5))
+  })
 }
 // function getTotalArtwork(array) {
 //     let totalArtwork = 0;
@@ -42,26 +42,26 @@ router.findOne = (req, res) => {
 // }
 
 router.addArtwork = (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    var artwork = new Artwork();
-    // artwork.art_id = req.body.art_id;
-    artwork.art_name = req.body.art_name;
-    artwork.author = req.body.author;
-    artwork.description = req.body.description;
-    // artwork.price = req.body.price;
-    // artwork.uploadDate = req.body.uploadDate;
-    artwork.view_times = req.body.view_times;
-    // artwork.art_type = req.body.art_type;
-    // artwork.format = req.body.format;
-    // artwork.buyer = req.body.buyer;
-    // artwork.datasize = req.body.datasize;
+  res.setHeader("Content-Type", "application/json")
+  let artwork = new Artwork()
+  // artwork.art_id = req.body.art_id;
+  artwork.art_name = req.body.art_name
+  artwork.author = req.body.author
+  artwork.description = req.body.description
+  // artwork.price = req.body.price;
+  // artwork.uploadDate = req.body.uploadDate;
+  artwork.view_times = req.body.view_times
+  // artwork.art_type = req.body.art_type;
+  // artwork.format = req.body.format;
+  // artwork.buyer = req.body.buyer;
+  // artwork.datasize = req.body.datasize;
 
-    artwork.save(function(err) {
-        if (err)
-            res.json({ message: 'Artwork NOT Added!', errmsg : err } );
-        else
-            res.json({ message: 'Artwork Successfully Added!', data: artwork });
-    });
+  artwork.save(function(err) {
+    if (err)
+      res.json({ message: "Artwork NOT Added!", errmsg : err } )
+    else
+      res.json({ message: "Artwork Successfully Added!", data: artwork })
+  })
 }
 
 // router.removeArtwork = (req, res) => {
@@ -73,63 +73,63 @@ router.addArtwork = (req, res) => {
 //     });
 // }
 router.removeArtwork = (req, res) => {
-    res.setHeader('Content-Type','application/json');
-        Artwork.findOneAndRemove({"art_name" : req.params.art_name},function (err, artwork) {
-            if (err) {
-                res.json({ message: 'Failed to delete!', data: null});
-            } else {
-                res.json({ message: 'Artwork deleted successfully', data: artwork});
-            }
-        });
+  res.setHeader("Content-Type","application/json")
+  Artwork.findOneAndRemove({"art_name" : req.params.art_name},function (err, artwork) {
+    if (err) {
+      res.json({ message: "Failed to delete!", data: null})
+    } else {
+      res.json({ message: "Artwork deleted successfully", data: artwork})
     }
+  })
+}
 
 router.updateViewTimes = (req, res) => {
 
-    Artwork.findById(req.params.id,function(err, artwork) {
-        if (err)
-            res.json({message: 'Artwork NOT Found!', errmsg: err});
-        else
-            artwork.view_times += 1;
-            artwork.save(function (err) {
-            if (err)
-                res.send(err);
-            else
-                res.json({message: "Updated Successfully!", data: artwork});
-        });
+  Artwork.findById(req.params.id,function(err, artwork) {
+    if (err)
+      res.json({message: "Artwork NOT Found!", errmsg: err})
+    else
+      artwork.view_times += 1
+    artwork.save(function (err) {
+      if (err)
+        res.send(err)
+      else
+        res.json({message: "Updated Successfully!", data: artwork})
+    })
 
-    });
+  })
 
 
 
-};
+}
 
 
 function getViewTimes(array) {
-    let sumOfViewTimes = 0;
-    array.forEach(function(obj) { sumOfViewTimes += obj.view_times; });
-    return sumOfViewTimes;
+  let sumOfViewTimes = 0
+  array.forEach(function(obj) { sumOfViewTimes += obj.view_times })
+  return sumOfViewTimes
 }
 router.findSumOfViewTimes = (req, res) => {
 
-    let viewtimes = getViewTimes(artwork);
-    res.json({totalviewtimes : viewtimes});
+  let viewtimes = getViewTimes(artwork)
+  res.json({totalviewtimes : viewtimes})
 }
 function fuzzyQuery(list, keyWord) {
-    var arr = [];
-    for (var i = 0; i < list.length; i++) {
-        if (list[i].split(keyWord).length > 1) {
-            arr.push(list[i]);
-        }
+  let arr = []
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].split(keyWord).length > 1) {
+      arr.push(list[i])
     }
-    return arr;
+  }
+  return arr
 }
 router.fuzzySearch = (req, res) => {
-    Artwork.find(function(err, artwork){
-        if(err)
-            res.send(err);
-        else
-            res.json({fuzzysearch : fuzzyQuery(keyWord)})
-    })
+  Artwork.find(function(err, artwork){
+    if(err)
+      res.send(err)
+    else
+      res.json({fuzzysearch : fuzzyQuery(keyWord)})
+  })
 }
 
 
@@ -164,4 +164,4 @@ router.fuzzySearch = (req, res) => {
 //     //put
 // }
 
-module.exports = router;
+module.exports = router
